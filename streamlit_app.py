@@ -1,5 +1,4 @@
 import streamlit as st
-
 import pandas as pd
 from difflib import get_close_matches
 import io
@@ -9,7 +8,7 @@ KEY_METRICS_FIELDS = [
     "Scenario", "WALE", "InPlaceRent", "InPlaceNOI", "InPlaceCapRate", "DistributionsToDate",
     "CurrentLiquidity", "CostBasis", "HoldPeriod", "ExitCapRate", "ExitNOI", "ExitPrice", "ExitPricePSF",
     "LIRR", "EquityMultiple", "TotalProfit", "InitialEquity", "AdditionalEquity", "TotalEquity",
-    "InitialDebt", "Holdbacks", "AdditionalProceeds", "TotalDebt", "10Y Unlevered DCF"
+    "InitialDebt", "Holdbacks", "AdditionalProceeds", "TotalDebt"
 ]
 
 def extract_from_fmv_tab(file, filename, scenario_value):
@@ -29,8 +28,6 @@ def extract_from_fmv_tab(file, filename, scenario_value):
         labels_col_e = df.iloc[:, 4].fillna("").astype(str).str.strip().str.lower().tolist()
 
         for field in KEY_METRICS_FIELDS:
-            if field == "Scenario":
-                continue  # already set by user input
             search_term = "wale (years)" if field.lower() == "wale" else field.lower()
             match = get_close_matches(search_term, labels_col_e, n=1, cutoff=0.7)
             if match:
@@ -39,6 +36,14 @@ def extract_from_fmv_tab(file, filename, scenario_value):
                 results[field] = value
             else:
                 results[field] = None
+
+        # 10Y Unlevered DCF from column A match, value in column B
+        dcf_match = df[df.iloc[:, 0].astype(str).str.strip().str.lower() == "10y unlevered dcf"]
+        if not dcf_match.empty:
+            dcf_value = dcf_match.iloc[0, 1]
+            results["10Y Unlevered DCF"] = dcf_value
+        else:
+            results["10Y Unlevered DCF"] = None
 
         # GAV from column K (10), FMV from column L (11), where column J (9) matches version
         version_matches = df[df.iloc[:, 9].astype(str).str.strip() == str(version)]
