@@ -122,9 +122,12 @@ def extract_general_assumptions(df, filename, property_id, file):
         results["Disposition_Costs"] = get_value_from_sheet(dcf_df, 2, "Disposition Costs", 4)
         results["Capital_Reserve_PSF"] = get_value_from_sheet(dcf_df, 6, "Capital Reserve", 8)
         results["Capital_Reserve_Inflation_Rate"] = get_value_from_sheet(dcf_df, 6, "Capital Reserve Inflation Rate", 8)
-        results["Projected_Exit_Date"] = get_value_from_sheet(inputs_df, 7, "Exit Date", 7)
         results["Interest_Rate_Hedge"] = get_value_from_sheet(inputs_df, 7, "Interest Rate / Hedge", 8)
         results["Cap_Rate"] = get_value_from_sheet(inputs_df, 1, "Cap Rate", 2)
+
+        # FIXED: Correct extraction for Projected Exit Date from column I (index 8)
+        matches = inputs_df[inputs_df.iloc[:, 7].astype(str).str.strip().str.lower() == "exit date"]
+        results["Projected_Exit_Date"] = matches.iloc[0, 8] if not matches.empty else None
 
         return results
 
